@@ -1,0 +1,15 @@
+{
+  "name": "live-packet-sniffer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local live packet sniffer dashboard for Windows using Node.js, Npcap and WebSocket.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "launch": "node launch.js",
+    "package:win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\package.ps1"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

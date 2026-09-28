@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101412">
+  <title>PacketScope | Live Network Monitor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="/" aria-label="PacketScope home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>PACKET<span class="brand-light">SCOPE</span></span>
+    </a>
+    <div class="topbar-right">
+      <span class="local-tag"><span class="local-dot"></span> LOCAL SESSION</span>
+      <span id="connection" class="connection"><span class="connection-dot"></span> Offline</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro-row">
+      <div><p class="eyebrow">NETWORK TELEMETRY / LIVE ANALYSIS</p><h1>Packet monitor</h1></div>
+      <div class="capture-state"><span id="state-indicator" class="state-indicator"></span><span id="status">Idle</span></div>
+    </section>
+
+    <section class="capture-bar" aria-label="Capture controls">
+      <div class="interface-field">
+        <label for="interface">INTERFACE</label>
+        <select id="interface" aria-label="Network interface"><option value="">Waiting for adapters...</option></select>
+      </div>
+      <div class="capture-actions">
+        <button id="refresh" class="icon-button" type="button" title="Refresh interfaces" aria-label="Refresh interfaces"><span aria-hidden="true">↻</span></button>
+        <button id="start" class="button button-start" type="button"><span class="button-symbol" aria-hidden="true"></span>Start capture</button>
+        <button id="pause" class="button button-quiet" type="button" disabled><span id="pause-symbol" class="pause-symbol" aria-hidden="true">Ⅱ</span><span id="pause-label">Pause</span></button>
+        <button id="stop" class="button button-stop" type="button" disabled><span class="stop-symbol" aria-hidden="true"></span>Stop</button>
+      </div>
+    </section>
+
+    <section class="display-filter-bar" aria-label="Wireshark display filter">
+      <div class="display-filter-input-wrap">
+        <label for="display-filter">DISPLAY FILTER</label>
+        <input id="display-filter" type="text" placeholder="tcp.port == 443 && ip.addr == 192.168.1.10" autocomplete="off" spellcheck="false">
+      </div>
+      <button id="apply-display-filter" class="filter-apply" type="button">Apply filter</button>
+      <button id="clear-display-filter" class="filter-clear" type="button" title="Clear the display filter">Clear</button>
+      <span id="display-filter-status" class="display-filter-status">TShark display filter</span>
+      <div class="filter-examples" aria-label="Filter examples">
+        <button type="button" data-filter="tcp">tcp</button>
+        <button type="button" data-filter="dns">dns</button>
+        <button type="button" data-filter="http.request">http.request</button>
+        <button type="button" data-filter="tcp.port == 443">tcp.port == 443</button>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="metrics" aria-label="Capture statistics">
+      <div class="metric"><span class="metric-label">PACKETS</span><strong id="total">0</strong><span class="metric-note">observed this session</span></div>
+      <div class="metric"><span class="metric-label">PACKETS / SEC</span><strong id="pps">0</strong><span class="metric-note">rolling one-second rate</span></div>
+      <div class="metric"><span class="metric-label">DATA VOLUME</span><strong id="bytes">0 B</strong><span class="metric-note">captured frame size</span></div>
+      <div class="metric"><span class="metric-label">ACTIVE ADAPTER</span><strong id="active-interface" class="metric-adapter">None</strong><span class="metric-note">selected capture source</span></div>
+    </section>
+
+    <section class="traffic-section" aria-labelledby="traffic-title">
+      <div class="section-heading"><div><p class="eyebrow">THROUGHPUT</p><h2 id="traffic-title">Packet rate</h2></div><span class="chart-legend"><i></i> packets / sec <span id="chart-window">LAST 60 SECONDS</span></span></div>
+      <div class="chart-wrap"><canvas id="traffic-chart" aria-label="Live packet rate over the last 60 seconds"></canvas><div id="chart-empty" class="chart-empty">Waiting for packet activity</div></div>
+    </section>
+
+    <section class="capture-section" aria-labelledby="capture-title">
+      <div class="section-heading capture-heading">
+        <div><p class="eyebrow">INSPECTION</p><h2 id="capture-title">Captured packets <span id="visible-count">0</span></h2></div>
+      </div>
+
+      <nav class="packet-menu" aria-label="Packet menu">
+        <div class="packet-filter-group">
+          <span class="menu-caption">FILTER</span>
+          <label class="search-field"><span class="search-icon" aria-hidden="true"></span><input id="search" type="search" placeholder="Search address, port, protocol..." autocomplete="off"><kbd>/</kbd></label>
+          <select id="protocol" aria-label="Filter by protocol">
+            <option value="ALL">All protocols</option><option value="TCP">TCP</option><option value="UDP">UDP</option><option value="ICMP">ICMP</option><option value="ICMPV6">ICMPv6</option><option value="ARP">ARP</option><option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="packet-file-group">
+          <span class="menu-caption">CAPTURE FILE</span>
+          <button id="save-capture" class="menu-button" type="button" title="Save all captured packets as a JSON file">Save</button>
+          <button id="import-capture" class="menu-button" type="button" title="Import a PacketScope JSON or CSV file">Import</button>
+          <input id="import-file" type="file" accept=".json,.csv,application/json,text/csv" hidden>
+          <details class="export-menu">
+            <summary>Export <span aria-hidden="true">⌄</span></summary>
+            <div class="export-options"><button id="export-csv" type="button">Filtered CSV</button><button id="export-json" type="button">Filtered JSON</button></div>
+          </details>
+          <button id="clear" class="menu-button menu-clear" type="button" title="Clear captured packets">Clear</button>
+          <label class="scroll-toggle"><input type="checkbox" id="autoScroll" checked><span class="toggle-track"></span>Follow</label>
+        </div>
+      </nav>
+
+      <div class="packet-layout">
+        <div class="packet-browser">
+          <div class="table-wrap">
+            <table><thead><tr><th scope="col">NO.</th><th scope="col">TIME</th><th scope="col">PROTOCOL</th><th scope="col">SOURCE</th><th scope="col">DESTINATION</th><th scope="col">LENGTH</th><th scope="col">HOST / PATH</th><th scope="col">INFO</th></tr></thead><tbody id="packets"></tbody></table>
+            <div id="empty" class="empty-state"><span class="empty-cross" aria-hidden="true">+</span><strong>No packets captured</strong><span>Choose an interface and start a session.</span></div>
+          </div>
+          <div class="table-footer"><span id="table-summary">0 packets</span><span>Showing latest 500 rows</span></div>
+        </div>
+
+        <aside class="detail-panel" aria-labelledby="detail-title">
+          <div class="detail-header"><div><p class="eyebrow">DECODED FRAME</p><h2 id="detail-title">Packet details</h2></div><span id="detail-protocol" class="protocol-chip">—</span></div>
+          <div id="detail-empty" class="detail-empty">Select a packet to inspect its decoded fields.</div>
+          <div id="detail-layers" class="detail-layers" hidden></div>
+        </aside>
+      </div>
+    </section>
+
+    <footer><span>PACKETSCOPE <span class="footer-sep">/</span> LOCAL CAPTURE</span><span>Capture only traffic you are authorized to monitor.</span></footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
